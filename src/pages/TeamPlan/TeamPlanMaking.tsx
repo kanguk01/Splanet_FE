@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
 import { useState, useEffect, useRef, memo } from "react";
 import { useNavigate } from "react-router-dom";
-import Input from "@/components/common/Input/Input";
+// import Input from "@/components/common/Input/Input"; // 사용되지 않으므로 주석 처리
 import MicrophoneButton from "@/components/features/MicrophoneButton/MicrophoneButton";
 import Button from "@/components/common/Button/Button";
 import RouterPath from "@/router/RouterPath";
@@ -76,8 +76,8 @@ const MemoizedTitle = memo(() => {
   return <Title>마이크 버튼을 누르고 자세히 얘기해주세요.</Title>;
 });
 
-//const MemoizedInput = memo(Input);
-const MemoizedMicrophoneButton = memo(MicrophoneButton);
+// const MemoizedInput = memo(Input); // 사용되지 않으므로 주석 처리
+// const MemoizedMicrophoneButton = memo(MicrophoneButton); // 사용되지 않으므로 주석 처리
 const MemoizedButton = memo(Button);
 const MemoizedButtonContainer = memo(({ navigate }: { navigate: any }) => {
   return (
@@ -124,70 +124,21 @@ const TeamPlanMakingPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [transcript, setTranscript] = useState("");
-  const socketRef = useRef<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  // const [isRecording, setIsRecording] = useState(false); // 사용되지 않으므로 주석 처리
+  // const socketRef = useRef<WebSocket | null>(null); // 사용되지 않으므로 주석 처리
+  // const audioContextRef = useRef<AudioContext | null>(null); // 사용되지 않으므로 주석 처리
+  // const processorRef = useRef<ScriptProcessorNode | null>(null); // 사용되지 않으므로 주석 처리
+  // const streamRef = useRef<MediaStream | null>(null); // 사용되지 않으므로 주석 처리
 
   // Float32Array를 Int16Array로 변환하는 함수
-  function convertFloat32ToInt16(buffer: Float32Array) {
-    const l = buffer.length;
-    const result = new Int16Array(l);
-    for (let i = 0; i < l; i += 1) {
-      const s = Math.max(-1, Math.min(1, buffer[i]));
-      result[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-    }
-    return result.buffer;
-  }
-
-  // 오디오 데이터를 16kHz로 다운샘플링하는 함수
-  // function downsampleBuffer(
-  //   buffer: Float32Array,
-  //   inputSampleRate: number,
-  //   outputSampleRate: number,
-  // ) {
-  //   if (outputSampleRate === inputSampleRate) {
-  //     return convertFloat32ToInt16(buffer);
+  // function convertFloat32ToInt16(buffer: Float32Array) {
+  //   const l = buffer.length;
+  //   const result = new Int16Array(l);
+  //   for (let i = 0; i < l; i += 1) {
+  //     const s = Math.max(-1, Math.min(1, buffer[i]));
+  //     result[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   //   }
-  //   const sampleRateRatio = inputSampleRate / outputSampleRate;
-  //   const newLength = Math.round(buffer.length / sampleRateRatio);
-  //   const result = new Float32Array(newLength);
-  //   let offsetResult = 0;
-  //   let offsetBuffer = 0;
-  //   while (offsetResult < result.length) {
-  //     const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-  //     let accum = 0;
-  //     let count = 0;
-  //     for (
-  //       let i = offsetBuffer;
-  //       i < nextOffsetBuffer && i < buffer.length;
-  //       i += 1
-  //     ) {
-  //       accum += buffer[i];
-  //       count += 1;
-  //     }
-  //     result[offsetResult] = accum / count;
-  //     offsetResult += 1;
-  //     offsetBuffer = nextOffsetBuffer;
-  //   }
-  //   return convertFloat32ToInt16(result);
+  //   return result.buffer;
   // }
-
-  // 사용하지 않는 함수 주석 처리
-  /*
-  const handleStartRecording = async () => {
-    console.log("녹음 시작");
-    setIsRecording(true);
-    ...
-  };
-
-  const handleStopRecording = () => {
-    console.log("녹음 중지");
-    setIsRecording(false);
-    ...
-  };
-  */
 
   return (
     <PlanPageContainer>
@@ -196,10 +147,10 @@ const TeamPlanMakingPage: React.FC = () => {
         <SubTitle animate={animate}>
           {subTitleMessages[currentMessageIndex]}
         </SubTitle>
-        <MemoizedInput
+        {/* <MemoizedInput
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
-        />
+        /> */}
         <Button size="long">팀원 초대하기</Button>
         <ParticipantsContainer>
           <Participant>
