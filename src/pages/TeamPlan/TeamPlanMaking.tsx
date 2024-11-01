@@ -21,13 +21,15 @@ const slideDown = keyframes`
     opacity: 1;
     transform: translateY(0);
   }
-  `;
+`;
+
 const PlanPageContainer = styled.div`
-  width: 60%
+  width: 60%;
   display: grid;
   justify-content: center;
   align-items: center;
 `;
+
 const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -36,6 +38,7 @@ const InputWrapper = styled.div`
   gap: 40px;
   width: 100%;
 `;
+
 const Title = styled.p`
   font-size: 20px;
   font-weight: bold;
@@ -46,6 +49,7 @@ const Title = styled.p`
     font-size: 30px;
   }
 `;
+
 const SubTitle = styled.p<{ animate: boolean }>`
   font-size: 18px;
   font-weight: bold;
@@ -60,6 +64,7 @@ const SubTitle = styled.p<{ animate: boolean }>`
     animation: ${({ animate }) => (animate ? slideDown : "none")} 1s ease-in-out;
   }
 `;
+
 const ButtonContainer = styled.div`
   display: flex;
   gap: 130px;
@@ -103,10 +108,10 @@ const TeamPlanMakingPage: React.FC = () => {
         prevIndex === subTitleMessages.length - 1 ? 0 : prevIndex + 1,
       );
 
-      // 에니메이션 시작
+      // 애니메이션 시작
       setAnimate(true);
 
-      // 애니메이션이 끝난 후 에니메이션 초기화
+      // 애니메이션이 끝난 후 애니메이션 초기화
       setTimeout(() => {
         setAnimate(false);
       }, 1000);
@@ -123,7 +128,7 @@ const TeamPlanMakingPage: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
+  // const [isRecording, setIsRecording] = useState(false); // 사용되지 않으므로 주석 처리
 
   // Float32Array를 Int16Array로 변환하는 함수
   function convertFloat32ToInt16(buffer: Float32Array) {
@@ -169,109 +174,20 @@ const TeamPlanMakingPage: React.FC = () => {
     return convertFloat32ToInt16(result);
   }
 
+  // 사용하지 않는 함수 주석 처리
+  /*
   const handleStartRecording = async () => {
     console.log("녹음 시작");
     setIsRecording(true);
-
-    // WebSocket 연결
-    console.log("WebSocket 연결 시도 중...");
-    socketRef.current = new WebSocket("wss://splanet.co.kr/ws/stt");
-    socketRef.current.binaryType = "arraybuffer";
-
-    socketRef.current.onopen = () => {
-      console.log("WebSocket 연결이 열렸습니다.");
-    };
-
-    socketRef.current.onmessage = (event) => {
-      const text = event.data;
-      console.log("인식된 텍스트:", text);
-      setTranscript((prev) => prev + text);
-    };
-
-    socketRef.current.onerror = (error) => {
-      console.error("WebSocket 오류 발생:", error);
-    };
-
-    socketRef.current.onclose = (event) => {
-      console.log(
-        `WebSocket이 닫혔습니다. 코드: ${event.code}, 이유: ${event.reason}`,
-      );
-      setIsRecording(false);
-    };
-
-    // 마이크 접근 및 AudioContext 설정
-    try {
-      console.log("마이크 접근 요청 중...");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log("마이크 접근 성공");
-
-      // AudioContext 생성
-      const AudioContext =
-        window.AudioContext || (window as any).webkitAudioContext;
-      const audioContext = new AudioContext({ sampleRate: 16000 });
-      audioContextRef.current = audioContext;
-      streamRef.current = stream;
-
-      // 입력 소스 생성
-      const input = audioContext.createMediaStreamSource(stream);
-
-      // ScriptProcessorNode 생성
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-      processorRef.current = processor;
-
-      // 오디오 처리
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        const buffer = downsampleBuffer(
-          inputData,
-          audioContext.sampleRate,
-          16000,
-        );
-
-        if (
-          socketRef.current &&
-          socketRef.current.readyState === WebSocket.OPEN
-        ) {
-          socketRef.current.send(buffer);
-        }
-      };
-
-      input.connect(processor);
-      processor.connect(audioContext.destination);
-    } catch (error) {
-      console.error("마이크 접근 오류:", error);
-    }
+    ...
   };
 
   const handleStopRecording = () => {
     console.log("녹음 중지");
     setIsRecording(false);
-
-    // 오디오 스트림 및 프로세서 종료
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-      processorRef.current = null;
-    }
-
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-
-    // WebSocket 종료
-    if (socketRef.current) {
-      if (socketRef.current.readyState === WebSocket.OPEN) {
-        console.log("WebSocket 연결 닫기 시도 중...");
-        socketRef.current.close();
-      }
-      socketRef.current = null;
-    }
+    ...
   };
+  */
 
   return (
     <PlanPageContainer>
