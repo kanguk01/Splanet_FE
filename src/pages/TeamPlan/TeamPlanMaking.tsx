@@ -76,7 +76,7 @@ const MemoizedTitle = memo(() => {
   return <Title>마이크 버튼을 누르고 자세히 얘기해주세요.</Title>;
 });
 
-const MemoizedInput = memo(Input);
+//const MemoizedInput = memo(Input);
 const MemoizedMicrophoneButton = memo(MicrophoneButton);
 const MemoizedButton = memo(Button);
 const MemoizedButtonContainer = memo(({ navigate }: { navigate: any }) => {
@@ -142,37 +142,37 @@ const TeamPlanMakingPage: React.FC = () => {
   }
 
   // 오디오 데이터를 16kHz로 다운샘플링하는 함수
-  function downsampleBuffer(
-    buffer: Float32Array,
-    inputSampleRate: number,
-    outputSampleRate: number,
-  ) {
-    if (outputSampleRate === inputSampleRate) {
-      return convertFloat32ToInt16(buffer);
-    }
-    const sampleRateRatio = inputSampleRate / outputSampleRate;
-    const newLength = Math.round(buffer.length / sampleRateRatio);
-    const result = new Float32Array(newLength);
-    let offsetResult = 0;
-    let offsetBuffer = 0;
-    while (offsetResult < result.length) {
-      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-      let accum = 0;
-      let count = 0;
-      for (
-        let i = offsetBuffer;
-        i < nextOffsetBuffer && i < buffer.length;
-        i += 1
-      ) {
-        accum += buffer[i];
-        count += 1;
-      }
-      result[offsetResult] = accum / count;
-      offsetResult += 1;
-      offsetBuffer = nextOffsetBuffer;
-    }
-    return convertFloat32ToInt16(result);
-  }
+  // function downsampleBuffer(
+  //   buffer: Float32Array,
+  //   inputSampleRate: number,
+  //   outputSampleRate: number,
+  // ) {
+  //   if (outputSampleRate === inputSampleRate) {
+  //     return convertFloat32ToInt16(buffer);
+  //   }
+  //   const sampleRateRatio = inputSampleRate / outputSampleRate;
+  //   const newLength = Math.round(buffer.length / sampleRateRatio);
+  //   const result = new Float32Array(newLength);
+  //   let offsetResult = 0;
+  //   let offsetBuffer = 0;
+  //   while (offsetResult < result.length) {
+  //     const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+  //     let accum = 0;
+  //     let count = 0;
+  //     for (
+  //       let i = offsetBuffer;
+  //       i < nextOffsetBuffer && i < buffer.length;
+  //       i += 1
+  //     ) {
+  //       accum += buffer[i];
+  //       count += 1;
+  //     }
+  //     result[offsetResult] = accum / count;
+  //     offsetResult += 1;
+  //     offsetBuffer = nextOffsetBuffer;
+  //   }
+  //   return convertFloat32ToInt16(result);
+  // }
 
   // 사용하지 않는 함수 주석 처리
   /*
