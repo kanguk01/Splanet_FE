@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, memo } from "react"; // `useRef` 삭제
 import { useNavigate } from "react-router-dom";
 // import Input from "@/components/common/Input/Input"; // 사용되지 않으므로 주석 처리
-import MicrophoneButton from "@/components/features/MicrophoneButton/MicrophoneButton";
+// import MicrophoneButton from "@/components/features/MicrophoneButton/MicrophoneButton"; // 사용되지 않으므로 주석 처리
 import Button from "@/components/common/Button/Button";
 import RouterPath from "@/router/RouterPath";
 import {
@@ -123,22 +123,7 @@ const TeamPlanMakingPage: React.FC = () => {
   // useNavigate 선언
   const navigate = useNavigate();
 
-  const [transcript, setTranscript] = useState("");
-  // const socketRef = useRef<WebSocket | null>(null); // 사용되지 않으므로 주석 처리
-  // const audioContextRef = useRef<AudioContext | null>(null); // 사용되지 않으므로 주석 처리
-  // const processorRef = useRef<ScriptProcessorNode | null>(null); // 사용되지 않으므로 주석 처리
-  // const streamRef = useRef<MediaStream | null>(null); // 사용되지 않으므로 주석 처리
-
-  // Float32Array를 Int16Array로 변환하는 함수
-  // function convertFloat32ToInt16(buffer: Float32Array) {
-  //   const l = buffer.length;
-  //   const result = new Int16Array(l);
-  //   for (let i = 0; i < l; i += 1) {
-  //     const s = Math.max(-1, Math.min(1, buffer[i]));
-  //     result[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-  //   }
-  //   return result.buffer;
-  // }
+  // const [transcript, setTranscript] = useState(""); // 사용되지 않으므로 주석 처리
 
   return (
     <PlanPageContainer>
