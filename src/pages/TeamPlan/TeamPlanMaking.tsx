@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// import Input from "@/components/common/Input/Input"; // 사용되지 않으므로 주석 처리
-// import MicrophoneButton from "@/components/features/MicrophoneButton/MicrophoneButton"; // 사용되지 않으므로 주석 처리
+import Input from "@/components/common/Input/Input";
 import Button from "@/components/common/Button/Button";
 import RouterPath from "@/router/RouterPath";
 import breakpoints from "@/variants/breakpoints";
 import useVoiceHook from "@/hooks/useVoiceHook";
+import MicrophoneButton from "@/components/features/MicrophoneButton/MicrophoneButton";
 // import useGenerateDeviceId from "@/api/hooks/useGenerateDeviceId";
 
 const PlanPageContainer = styled.div`
@@ -94,7 +94,9 @@ const TeamPlanMakingPage: React.FC = () => {
         <MessageSilderWithAnimation />
         <Input
           value={transcript}
-          onChange={(e) => setTranscript(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setTranscript(e.target.value)
+          }
         />
         <MicrophoneButton
           onStartClick={handleStartRecording}
