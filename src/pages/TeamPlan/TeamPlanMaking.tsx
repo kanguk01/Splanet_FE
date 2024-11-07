@@ -5,15 +5,9 @@ import { useNavigate } from "react-router-dom";
 // import MicrophoneButton from "@/components/features/MicrophoneButton/MicrophoneButton"; // 사용되지 않으므로 주석 처리
 import Button from "@/components/common/Button/Button";
 import RouterPath from "@/router/RouterPath";
-import {
-  ParticipantsContainer,
-  Participant,
-  ParticipantName,
-} from "./TeamPlanDetail";
 import breakpoints from "@/variants/breakpoints";
 import useVoiceHook from "@/hooks/useVoiceHook";
-import useGenerateDeviceId from "@/api/hooks/useGenerateDeviceId";
-import { useInviteUserToTeam } from "@/api/hooks/useTeam";
+// import useGenerateDeviceId from "@/api/hooks/useGenerateDeviceId";
 
 const PlanPageContainer = styled.div`
   width: 60%;
@@ -79,7 +73,7 @@ function MessageSilderWithAnimation() {
 }
 
 const TeamPlanMakingPage: React.FC = () => {
-  const { data: deviceId } = useGenerateDeviceId();
+  // const { data: deviceId } = useGenerateDeviceId();
   const {
     transcript,
     setTranscript,
