@@ -1,3 +1,4 @@
+// src/components/common/Sidebar/Sidebar.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Home,
@@ -7,7 +8,7 @@ import {
   People,
   Menu,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom"; // useLocation 추가
+import { useNavigate, useLocation } from "react-router-dom";
 import breakpoints from "@/variants/breakpoints";
 import {
   SidebarContainer,
@@ -15,14 +16,13 @@ import {
   HamburgerMenu,
   MenuItemsContainer,
   MenuItem,
-  StyledLink,
   MenuItemIcon,
   MenuItemText,
   TimeDisplay,
   DateDisplay,
 } from "./Sidebar.styles";
 import logo from "@/assets/logo.svg";
-// 고정된 메뉴 항목 타입 정의
+
 interface MenuItemType {
   name: string;
   icon: JSX.Element;
@@ -41,34 +41,28 @@ const TimeComponent = () => {
   const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
+    const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const getFormattedTime = (date: Date) => {
-    return date.toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-  };
-
   return (
-    <>
-      <TimeDisplay>{getFormattedTime(time)}</TimeDisplay>
+    <div className="time-container">
       <DateDisplay>
         {time.toLocaleDateString("ko-KR", {
-          weekday: "short",
+          weekday: "long",
           year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
+          month: "long",
+          day: "numeric",
         })}
       </DateDisplay>
-    </>
+      <TimeDisplay>
+        {time.toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })}
+      </TimeDisplay>
+    </div>
   );
 };
 
@@ -81,12 +75,8 @@ interface MenuItemProps {
 const MemoizedMenuItem = React.memo(
   ({ item, selected, onClick }: MenuItemProps) => (
     <MenuItem selected={selected} onClick={onClick}>
-      <MenuItemIcon>{item.icon}</MenuItemIcon>
-      <MenuItemText>
-        <StyledLink to={item.path} selected={selected}>
-          {item.name}
-        </StyledLink>
-      </MenuItemText>
+      <MenuItemIcon selected={selected}>{item.icon}</MenuItemIcon>
+      <MenuItemText selected={selected}>{item.name}</MenuItemText>
     </MenuItem>
   ),
 );
@@ -125,7 +115,10 @@ const Sidebar = () => {
   const handleMenuClick = useCallback(
     (menuName: string, path: string) => {
       setSelectedMenu(menuName);
-      navigate(path); // 페이지 이동 처리
+      navigate(path);
+      if (window.innerWidth < breakpoints.sm) {
+        setIsOpen(false);
+      }
     },
     [navigate],
   );
@@ -141,7 +134,7 @@ const Sidebar = () => {
           src={logo}
           alt="Logo"
           width="170"
-          height="59"
+          height="69"
           style={{ paddingTop: "10px", cursor: "pointer" }}
           onClick={handleLogoClick}
         />
@@ -155,8 +148,8 @@ const Sidebar = () => {
           src={logo}
           alt="Logo"
           width="170"
-          height="59"
-          style={{ marginBottom: "15px", cursor: "pointer" }}
+          height="69"
+          style={{ marginBottom: "32px", cursor: "pointer" }}
           onClick={handleLogoClick}
         />
       )}

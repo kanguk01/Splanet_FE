@@ -1,30 +1,58 @@
-import { useState, useEffect } from "react";
+// src/pages/TeamPlan/TeamPlanSelectPage.tsx
+import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import CustomCalendar, {
   CalendarEvent,
-} from "../../components/features/CustomCalendar/CustomCalendar";
+} from "@/components/features/CustomCalendar/CustomCalendar";
 import {
   useGptLight,
   useGptModerate,
   useGptStrong,
-} from "@/api/hooks/useTeamPlan";
+} from "@/api/hooks/useGeneratePlans";
 import Button from "@/components/common/Button/Button";
+import NumberButton from "@/components/common/NumberButton/NumberButton";
 import RouterPath from "@/router/RouterPath";
+import breakpoints from "@/variants/breakpoints";
 
 const PageContainer = styled.div`
-  width: 100%;
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  padding: 32px;
+  min-height: 100vh;
+  box-sizing: border-box;
+`;
+
+const Title = styled.h1`
+  font-size: 28px;
+  font-weight: bold;
+  color: #2d3748;
+  margin-bottom: 24px;
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  margin-top: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
+`;
+
+const CalendarContainer = styled.div`
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 24px;
+
+  @media (max-width: ${breakpoints.sm}px) {
+    padding: 0 20px;
+  }
+`;
+
+const ActionButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 120px;
 `;
 
 const TeamPlanSelectPage: React.FC = () => {
@@ -32,7 +60,7 @@ const TeamPlanSelectPage: React.FC = () => {
   const { transcript } = state || {};
   const navigate = useNavigate();
   const deviceId = Cookies.get("device_id") || "defaultDeviceId";
-  // 각 레벨별 플랜을 저장하는 객체 상태
+
   const [planCache, setPlanCache] = useState<Record<string, CalendarEvent[]>>({
     light: [],
     moderate: [],
@@ -49,15 +77,14 @@ const TeamPlanSelectPage: React.FC = () => {
 
   const handleNextClick = async () => {
     navigate(RouterPath.TEAM_PLAN_UPDATE, {
-      state: { plans: planCache[selectedLevel] }, // 현재 선택된 플랜 전달
+      state: { plans: planCache[selectedLevel] },
     });
   };
 
-  // 레벨에 따라 요청을 보내는 함수
   const handleFetchPlans = (level: "light" | "moderate" | "strong") => {
     if (planCache[level].length > 0) {
       setSelectedLevel(level);
-      return; // 이미 캐싱된 값이 있을 경우 요청 생략
+      return;
     }
     setIsLoading(true);
 
@@ -74,14 +101,11 @@ const TeamPlanSelectPage: React.FC = () => {
       { deviceId, text: transcript || "기본 추천 텍스트" },
       {
         onSuccess: (data) => {
-          console.log("응답 데이터:", data.planCards);
           setPlanCache((prevCache) => ({
             ...prevCache,
-            [level]: data.planCards, // 각 레벨별 결과를 캐시에 저장
+            [level]: data.planCards,
           }));
-          console.log(data.planCards);
           setSelectedLevel(level);
-          console.log(level);
           setIsLoading(false);
         },
         onError: (error) => {
@@ -92,46 +116,52 @@ const TeamPlanSelectPage: React.FC = () => {
     );
   };
 
-  // 첫 화면 진입 시 자동으로 light 요청
   useEffect(() => {
     if (planCache.light.length === 0) {
-      handleFetchPlans("light"); // 첫 진입 시 light 데이터 요청
+      handleFetchPlans("light");
     } else {
-      setSelectedLevel("light"); // 캐싱된 light 데이터가 있을 경우 바로 설정
+      setSelectedLevel("light");
     }
-  }, [planCache.light]);
+  }, []);
 
   return (
     <PageContainer>
+      <Title>원하는 플랜을 선택하세요</Title>
       <ButtonContainer>
-        <button type="button" onClick={() => handleFetchPlans("light")}>
-          1 (Light)
-        </button>
-        <button type="button" onClick={() => handleFetchPlans("moderate")}>
-          2 (Moderate)
-        </button>
-        <button type="button" onClick={() => handleFetchPlans("strong")}>
-          3 (Strong)
-        </button>
+        <NumberButton
+          number={1}
+          clicked={selectedLevel === "light"}
+          onClick={() => handleFetchPlans("light")}
+        />
+        <NumberButton
+          number={2}
+          clicked={selectedLevel === "moderate"}
+          onClick={() => handleFetchPlans("moderate")}
+        />
+        <NumberButton
+          number={3}
+          clicked={selectedLevel === "strong"}
+          onClick={() => handleFetchPlans("strong")}
+        />
       </ButtonContainer>
 
       {isLoading ? (
         <p>로딩 중...</p>
       ) : (
-        <CustomCalendar
-          calendarOwner="Team Plans"
-          plans={planCache[selectedLevel]}
-          isReadOnly
-        />
+        <CalendarContainer>
+          <CustomCalendar
+            calendarOwner="Team Plans"
+            plans={planCache[selectedLevel]}
+            isReadOnly
+          />
+        </CalendarContainer>
       )}
-      <ButtonContainer>
-        <Button onClick={handleNextClick} size="small">
-          다음
-        </Button>
-        <Button onClick={() => navigate(-1)} theme="secondary" size="small">
+      <ActionButtonContainer>
+        <Button onClick={handleNextClick}>다음</Button>
+        <Button onClick={() => navigate(-1)} theme="secondary">
           취소
         </Button>
-      </ButtonContainer>
+      </ActionButtonContainer>
     </PageContainer>
   );
 };

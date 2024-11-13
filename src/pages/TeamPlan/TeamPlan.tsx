@@ -1,127 +1,155 @@
-/** @jsxImportSource @emotion/react */
+// src/pages/TeamPlan/TeamPlanPage.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
+import { Close } from "@mui/icons-material";
+import { useQueries } from "@tanstack/react-query";
 import {
   useFetchTeams,
   useDeleteTeam,
   useLeaveTeam,
   useRespondToInvitation,
   useFetchInvitations,
+  useCancelTeamInvitation,
 } from "@/api/hooks/useTeam";
 import useUserData from "@/api/hooks/useUserData";
 import Button from "@/components/common/Button/Button";
 import breakpoints from "@/variants/breakpoints";
 import { apiClient } from "@/api/instance";
+import { TeamInvitation } from "@/types/types";
 
-// Styles
 const PageContainer = styled.div`
-  width: 100%;
-  max-width: 1200px;
-  height: 100vh;
-  padding: 10px 45px;
   display: flex;
-  flex-direction: column;
-  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  background-color: #ffffff;
+  width: 100%;
   box-sizing: border-box;
-  @media (max-width: ${breakpoints.sm}px) {
-    padding-top: 80px;
-  }
-  gap: 10px;
 `;
 
-const PageTitle = styled.div`
-  margin-right: auto;
-  color: black;
-  font-size: 23px;
+const ContentWrapper = styled.main`
+  flex-grow: 1;
+  padding: 32px;
+  overflow: auto;
+  box-sizing: border-box;
+`;
+
+const Heading = styled.h1`
+  font-size: 24px;
   font-weight: 600;
+  margin-bottom: 24px;
+  color: #2d3748;
 `;
 
 const ButtonWrapper = styled.div`
-  margin-left: auto;
-  padding: 8px;
+  display: flex;
   justify-content: flex-end;
-  display: flex;
+  margin-bottom: 24px;
   gap: 8px;
-`;
-
-const PlanCard = styled.div`
-  width: 100%;
-  height: 99px;
-  padding: 12.8px;
-  background: #f5f5f5;
-  display: flex;
-  justify-content: space-between;
-  border-radius: 16px;
-  align-items: center;
-`;
-
-const PlanTitleContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const PlanTitle = styled.div`
-  color: black;
-  font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-`;
-
-const Participants = styled.div`
-  height: 32px;
-  color: #aab2c8;
-  font-size: 15px;
-  font-weight: 700;
 `;
 
 const TabsContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 28px;
-  width: 100%;
-  margin-bottom: 20px;
-  box-sizing: border-box;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 `;
 
 const Tab = styled.div<{ active: boolean }>`
   font-size: 15px;
   font-weight: ${(props) => (props.active ? 600 : 400)};
-  color: ${(props) => (props.active ? "black" : "#9b9b9b")};
+  color: ${(props) => (props.active ? "#39a7f7" : "#9b9b9b")};
   cursor: pointer;
   transition: color 0.3s ease;
 `;
 
+const CardGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (min-width: ${breakpoints.lg}px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const PlanCard = styled.div`
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const PlanTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+`;
+
 const RoleBadge = styled.div<{ isAdmin: boolean }>`
-  width: 55px;
-  height: 20px;
-  background-color: ${(props) => (props.isAdmin ? "#a6caec" : "#ffc002")};
+  background-color: ${(props) => (props.isAdmin ? "#ffc002" : "#a6caec")};
   color: white;
   font-size: 13px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  margin-left: 8px; // PlanTitle과 간격 조정
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
 `;
 
-const InviteeItem = styled.div`
+const Participants = styled.div`
+  color: #4a5568;
+  font-size: 15px;
+  margin-bottom: 16px;
+`;
+
+const ButtonGroup = styled.div`
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
+  justify-content: flex-end;
   align-items: center;
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  margin-top: 20px;
+`;
+
+const CancelIcon = styled(Close)`
+  cursor: pointer;
+  color: #ff4d4f;
+  &:hover {
+    color: #ff7875;
+  }
+`;
+
+const ParticipantList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const ParticipantItem = styled.div`
+  display: flex;
+  align-items: center;
+  background-color: #f0f4fa;
   padding: 8px 12px;
-  background: #f4f4f4;
   border-radius: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
 `;
 
-// InviteeItem 내부 텍스트 스타일링 (닉네임 & 상태)
-const NicknameText = styled.span`
-  font-weight: bold;
-  color: #333;
+const ParticipantName = styled.span`
+  margin-right: 4px;
+  color: #2d3748;
 `;
 
 export default function TeamPlanPage() {
@@ -133,26 +161,39 @@ export default function TeamPlanPage() {
   const deleteTeamMutation = useDeleteTeam();
   const leaveTeamMutation = useLeaveTeam();
   const respondToInvitationMutation = useRespondToInvitation();
-
+  const cancelInvitationMutation = useCancelTeamInvitation();
   const [activeTab, setActiveTab] = useState("teamList");
   const [teamMembers, setTeamMembers] = useState<{ [key: number]: any[] }>({});
-  const [sentInvitations, setSentInvitations] = useState<{
-    [key: number]: any[];
-  }>({});
 
-  // 팀 멤버 정보 가져오기
+  const adminTeams = teams.filter((team) => {
+    const members = teamMembers[team.id] || [];
+    return members.some(
+      (member) => member.role === "ADMIN" && member.userId === userData.id,
+    );
+  });
+
+  const sentInvitationsQueries = useQueries({
+    queries: adminTeams.map((team) => ({
+      queryKey: ["sentInvitations", team.id],
+      queryFn: () =>
+        apiClient
+          .get(`/api/teams/${team.id}/invitations`)
+          .then((res) => res.data),
+      enabled: !!teamMembers[team.id],
+    })),
+  });
+
   useEffect(() => {
     const fetchAllMembers = async () => {
       const memberData: { [key: number]: any[] } = {};
 
-      // 모든 팀 멤버 데이터를 가져오는 API 호출
       await Promise.all(
         teams.map(async (team) => {
           try {
             const response = await apiClient.get(
               `/api/teams/${team.id}/members`,
             );
-            memberData[team.id] = response.data; // 팀 ID를 키로 멤버 데이터 저장
+            memberData[team.id] = response.data;
           } catch (error) {
             console.error(`Error fetching members for team ${team.id}:`, error);
           }
@@ -165,36 +206,15 @@ export default function TeamPlanPage() {
     if (teams.length > 0) fetchAllMembers();
   }, [teams]);
 
-  // 보낸 초대 정보 가져오기
-  useEffect(() => {
-    const fetchSentInvitations = async () => {
-      const invitationsData: { [key: number]: any[] } = {};
-
-      await Promise.all(
-        teams.map(async (team) => {
-          try {
-            const response = await apiClient.get(
-              `/api/teams/${team.id}/invitations`,
-            );
-            invitationsData[team.id] = response.data;
-          } catch (error) {
-            console.error(
-              `Error fetching sent invitations for team ${team.id}:`,
-              error,
-            );
-          }
-        }),
-      );
-
-      setSentInvitations(invitationsData);
-    };
-
-    if (teams.length > 0) fetchSentInvitations();
-  }, [teams]);
-
-  const handleVisitClick = (teamId: number, teamName: string) => {
-    const members = teamMembers[teamId] || []; // 해당 팀의 멤버 목록을 가져옴
-    navigate(`/team-plan/${teamId}`, { state: { teamName, teamId, members } });
+  const handleVisitClick = (
+    teamId: number,
+    teamName: string,
+    isAdmin: boolean,
+  ) => {
+    const members = teamMembers[teamId] || [];
+    navigate(`/team-plan/${teamId}`, {
+      state: { teamName, teamId, members, isAdmin, myId: userData.id },
+    });
   };
 
   const handleVisitMaking = () => {
@@ -209,136 +229,187 @@ export default function TeamPlanPage() {
     respondToInvitationMutation.mutate({ invitationId, isAccepted: false });
   };
 
-  const renderedTeamList = teams.map((team) => {
-    const members = teamMembers[team.id] || [];
-    const isAdmin = members.some(
-      (member) => member.role === "ADMIN" && member.userId === userData.id,
+  // 팀 목록 렌더링
+  const renderedTeamList =
+    teams.length > 0 ? (
+      <CardGrid>
+        {teams.map((team) => {
+          const members = teamMembers[team.id] || [];
+          const isAdmin = members.some(
+            (member) =>
+              member.role === "ADMIN" && member.userId === userData.id,
+          );
+
+          return (
+            <PlanCard key={team.id}>
+              <div>
+                <PlanTitle>
+                  {team.teamName}
+                  <RoleBadge isAdmin={isAdmin}>
+                    {isAdmin ? "관리자" : "멤버"}
+                  </RoleBadge>
+                </PlanTitle>
+                <Participants>
+                  참여자: {members.map((member) => member.nickname).join(", ")}
+                </Participants>
+              </div>
+              <ButtonGroup>
+                <Button
+                  theme="primary"
+                  onClick={() =>
+                    handleVisitClick(team.id, team.teamName, isAdmin)
+                  }
+                >
+                  방문
+                </Button>
+                {isAdmin ? (
+                  <Button
+                    theme="secondary"
+                    onClick={() => deleteTeamMutation.mutate(team.id)}
+                  >
+                    삭제
+                  </Button>
+                ) : (
+                  <Button
+                    theme="secondary"
+                    onClick={() => leaveTeamMutation.mutate(team.id)}
+                  >
+                    나가기
+                  </Button>
+                )}
+              </ButtonGroup>
+            </PlanCard>
+          );
+        })}
+      </CardGrid>
+    ) : (
+      <EmptyMessage>팀이 없습니다.</EmptyMessage>
     );
 
-    return (
-      <PlanCard key={team.id}>
-        <PlanTitleContainer>
-          <PlanTitle>
-            {team.teamName}
-            <RoleBadge isAdmin={isAdmin}>
-              {isAdmin ? "관리자" : "멤버"}
-            </RoleBadge>
-          </PlanTitle>
-
-          <Participants>
-            참여자: {members.map((member) => member.nickname).join(", ")}
-          </Participants>
-        </PlanTitleContainer>
-        <ButtonWrapper>
-          <Button
-            size="small"
-            theme="primary"
-            onClick={() => handleVisitClick(team.id, team.teamName)}
-          >
-            방문
-          </Button>
-          {isAdmin ? (
-            <Button
-              size="small"
-              theme="secondary"
-              onClick={() => deleteTeamMutation.mutate(team.id)}
-            >
-              삭제
-            </Button>
-          ) : (
-            <Button
-              size="small"
-              theme="secondary"
-              onClick={() => leaveTeamMutation.mutate(team.id)}
-            >
-              나가기
-            </Button>
-          )}
-        </ButtonWrapper>
-      </PlanCard>
+  // 받은 요청 렌더링
+  const renderedInvitations =
+    invitations.length > 0 ? (
+      <CardGrid>
+        {invitations.map((invite) => (
+          <PlanCard key={invite.invitationId}>
+            <PlanTitle>{invite.teamName}</PlanTitle>
+            <ButtonGroup>
+              <Button
+                theme="primary"
+                onClick={() => handleAcceptInvitation(invite.invitationId)}
+              >
+                수락
+              </Button>
+              <Button
+                theme="secondary"
+                onClick={() => handleRejectInvitation(invite.invitationId)}
+              >
+                거절
+              </Button>
+            </ButtonGroup>
+          </PlanCard>
+        ))}
+      </CardGrid>
+    ) : (
+      <EmptyMessage>받은 요청이 없습니다.</EmptyMessage>
     );
-  });
 
-  const renderedInvitations = invitations.map((invite) => (
-    <PlanCard key={invite.invitationId}>
-      <PlanTitleContainer>
-        <PlanTitle>{invite.teamName}</PlanTitle>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }} />
-      </PlanTitleContainer>
-      <Button
-        size="small"
-        onClick={() => handleAcceptInvitation(invite.invitationId)}
-      >
-        수락
-      </Button>
-      <Button
-        size="small"
-        theme="secondary"
-        onClick={() => handleRejectInvitation(invite.invitationId)}
-      >
-        거절
-      </Button>
-    </PlanCard>
-  ));
+  // 보낸 요청 렌더링
+  const renderedSentInvitations =
+    adminTeams.length > 0 ? (
+      <CardGrid>
+        {adminTeams.map((team, index) => {
+          const { data: teamInvitations = [], isLoading } =
+            sentInvitationsQueries[index];
 
-  const renderedSentInvitations = teams.map((team) => {
-    const members = teamMembers[team.id] || [];
-    const isAdmin = members.some(
-      (member) => member.role === "ADMIN" && member.userId === userData.id,
+          if (isLoading) {
+            return (
+              <PlanCard key={team.id}>
+                <div>로딩 중...</div>
+              </PlanCard>
+            );
+          }
+
+          if (teamInvitations.length === 0) return null;
+
+          const handleCancelInvitation = (invitationId: number) => {
+            if (window.confirm("초대를 취소하시겠습니까?")) {
+              cancelInvitationMutation.mutate(
+                { invitationId, teamId: team.id },
+                {
+                  onSuccess: () => {
+                    alert("초대가 취소되었습니다.");
+                  },
+                },
+              );
+            }
+          };
+
+          return (
+            <PlanCard key={team.id}>
+              <div>
+                <PlanTitle>{team.teamName}</PlanTitle>
+                <Participants>
+                  초대한 멤버:
+                  <ParticipantList>
+                    {teamInvitations.map((invite: TeamInvitation) => (
+                      <ParticipantItem key={invite.invitationId}>
+                        <ParticipantName>{invite.nickname}</ParticipantName>
+                        <CancelIcon
+                          onClick={() =>
+                            handleCancelInvitation(invite.invitationId)
+                          }
+                        />
+                      </ParticipantItem>
+                    ))}
+                  </ParticipantList>
+                </Participants>
+              </div>
+            </PlanCard>
+          );
+        })}
+      </CardGrid>
+    ) : (
+      <EmptyMessage>보낸 요청이 없습니다.</EmptyMessage>
     );
-    if (!isAdmin) return null;
-
-    const teamInvitations = sentInvitations[team.id] || [];
-
-    return (
-      <div key={team.id}>
-        <PlanTitle>{team.teamName}</PlanTitle>
-        <Participants>
-          {teamInvitations.map((invite) => (
-            <InviteeItem key={invite.invitationId}>
-              <NicknameText>{invite.nickname}</NicknameText>
-            </InviteeItem>
-          ))}
-        </Participants>
-      </div>
-    );
-  });
 
   if (isLoadingTeams || isLoadingInvitations) return <div>Loading...</div>;
 
   return (
     <PageContainer>
-      <PageTitle>팀 플랜</PageTitle>
-      <ButtonWrapper>
-        <Button theme="primary" size="long" onClick={handleVisitMaking}>
-          팀 플랜 추가하기
-        </Button>
-      </ButtonWrapper>
+      <ContentWrapper>
+        <Heading>팀 플랜</Heading>
+        <ButtonWrapper>
+          <Button theme="primary" onClick={handleVisitMaking}>
+            팀 플랜 추가하기
+          </Button>
+        </ButtonWrapper>
 
-      <TabsContainer>
-        <Tab
-          active={activeTab === "teamList"}
-          onClick={() => setActiveTab("teamList")}
-        >
-          팀 목록
-        </Tab>
-        <Tab
-          active={activeTab === "invitations"}
-          onClick={() => setActiveTab("invitations")}
-        >
-          받은 요청
-        </Tab>
-        <Tab
-          active={activeTab === "sentInvitations"}
-          onClick={() => setActiveTab("sentInvitations")}
-        >
-          보낸 요청
-        </Tab>
-      </TabsContainer>
+        <TabsContainer>
+          <Tab
+            active={activeTab === "teamList"}
+            onClick={() => setActiveTab("teamList")}
+          >
+            팀 목록
+          </Tab>
+          <Tab
+            active={activeTab === "invitations"}
+            onClick={() => setActiveTab("invitations")}
+          >
+            받은 요청
+          </Tab>
+          <Tab
+            active={activeTab === "sentInvitations"}
+            onClick={() => setActiveTab("sentInvitations")}
+          >
+            보낸 요청
+          </Tab>
+        </TabsContainer>
 
-      {activeTab === "teamList" && renderedTeamList}
-      {activeTab === "invitations" && renderedInvitations}
-      {activeTab === "sentInvitations" && renderedSentInvitations}
+        {activeTab === "teamList" && renderedTeamList}
+        {activeTab === "invitations" && renderedInvitations}
+        {activeTab === "sentInvitations" && renderedSentInvitations}
+      </ContentWrapper>
     </PageContainer>
   );
 }
