@@ -58,7 +58,6 @@ const StyledInput = styled.input`
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2); /* focus:ring-2 focus:ring-[#2196F3] */
   }
 `;
-
 const ToggleContainer = styled.div`
   display: flex;
   align-items: center;
@@ -236,6 +235,12 @@ const EventContent = ({
               e.stopPropagation();
               handleOptionClick("edit");
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOptionClick("edit");
+              }
+            }}
           >
             수정
           </div>
@@ -255,6 +260,12 @@ const EventContent = ({
             onClick={(e) => {
               e.stopPropagation();
               handleOptionClick("delete");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOptionClick("delete");
+              }
             }}
           >
             삭제
@@ -572,7 +583,20 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
                   )
                 }
               />
-              <Button onClick={handleEditSubmit}>저장</Button>
+              <ToggleContainer>
+                공개 여부
+                <ToggleSwitch
+                  type="checkbox"
+                  checked={!!currentEditPlan.accessibility} // Converts null to false
+                  onChange={(e) =>
+                    setCurrentEditPlan((prev) => ({
+                      ...prev!,
+                      accessibility: e.target.checked,
+                    }))
+                  }
+                />
+              </ToggleContainer>
+              <Button onClick={handleEditSubmit}>추가</Button>
             </ModalContainer>
           </Modal>
         )}

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { Rings } from "react-loader-spinner";
 import CustomCalendar, {
   CalendarEvent,
@@ -114,13 +114,11 @@ const PlanSelectPage: React.FC = () => {
           typeof strongData === "string"
         ) {
           const responseData = [
-            typeof lightData === "string" ? `1번째 AI답변: ${lightData}` : null,
-            typeof moderateData === "string"
-              ? `\n2번째 AI답변: ${moderateData}`
-              : null,
-            typeof strongData === "string"
-              ? `\n3번째 AI답변: ${strongData}`
-              : null,
+            // typeof lightData === "string" ? `1번째 AI답변: ${lightData}` : null,
+            // typeof moderateData === "string"
+            //   ? `\n2번째 AI답변: ${moderateData}`
+            //   : null,
+            typeof strongData === "string" ? `${strongData}` : null,
           ]
             .filter((data) => data !== null)
             .join("\n");
