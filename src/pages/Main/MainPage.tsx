@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import styled from "@emotion/styled";
 import { useNavigate, useLocation } from "react-router-dom";
+import Joyride, { Step, CallBackProps } from "react-joyride";
 import CustomCalendar, {
   CalendarEvent,
 } from "@/components/features/CustomCalendar/CustomCalendar";
@@ -15,6 +16,21 @@ import { apiClient } from "@/api/instance";
 import useUserData from "@/api/hooks/useUserData";
 import useNotificationSetup from "@/hooks/useNotificationSetup";
 
+const steps: Step[] = [
+  {
+    target: ".calendar-area", // 캘린더 영역
+    content: "플랜을 잡아당겨 옮기고, 클릭하여 수정해보세요.",
+  },
+  {
+    target: ".add-plan-button", // 플랜 추가 버튼
+    content: "여기에서 새로운 플랜을 추가할 수 있습니다.",
+  },
+  {
+    target: ".visit-button", // 댓글 조회 버튼
+    content: "본인의 계획표에 달린 댓글을 확인할 수 있습니다.",
+  },
+];
+
 const PageContainer = styled.div`
   background-color: #ffffff;
   padding: 20px;
@@ -22,7 +38,7 @@ const PageContainer = styled.div`
 `;
 
 const ButtonWrapper = styled.div`
-  gap: 20px;
+  gap: 40px;
   display: flex;
   flex-direction: row;
   margin-top: 20px;
@@ -30,15 +46,13 @@ const ButtonWrapper = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  width: 100%;
   padding: 20px;
   background-color: white;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   gap: 15px;
-  box-sizing: border-box;
 `;
 
 const Title = styled.h2`
@@ -47,12 +61,7 @@ const Title = styled.h2`
   color: #333;
   margin-bottom: 20px;
 `;
-const ContentWrapper = styled.main`
-  flex-grow: 1;
-  padding: 32px;
-  overflow: auto;
-  box-sizing: border-box;
-`;
+
 const StyledInput = styled.input`
   width: 100%;
   padding: 12px;
@@ -60,11 +69,19 @@ const StyledInput = styled.input`
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 1rem;
+  margin-left: -15px;
   &:focus {
-    outline: none; /* focus:outline-none */
-    border-color: #2196f3; /* focus:border-[#2196F3] */
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2); /* focus:ring-2 focus:ring-[#2196F3] */
+    outline: none;
+    border-color: #39a7f7;
+    box-shadow: 0 0 0 2px #338bd0;
   }
+`;
+
+const ContentWrapper = styled.main`
+  flex-grow: 1;
+  padding: 32px;
+  overflow: auto;
+  box-sizing: border-box;
 `;
 
 const Spinner = styled.div`
@@ -103,6 +120,32 @@ export default function MainPage() {
   const { userData } = useUserData();
   const savePlanMutation = useCreatePlan();
   const isPlanSaved = useRef(false);
+  const [runGuide, setRunGuide] = useState(true);
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status, action, index, lifecycle } = data;
+
+    console.log(data); // 디버깅용
+
+    if (status === "finished" || status === "skipped") {
+      // 모든 단계를 완료했거나 건너뛰었을 때 실행
+      localStorage.setItem("hasSeenGuide", "true");
+      setRunGuide(false); // 가이드 종료
+      setStepIndex(0); // 초기화
+    }
+
+    if (action === "next" && lifecycle === "complete") {
+      setStepIndex(index + 1); // 다음 단계로 이동
+    }
+  };
+
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem("hasSeenGuide");
+    if (hasSeenGuide) {
+      setRunGuide(false); // 이전에 가이드를 봤다면 실행하지 않음
+    }
+  }, []);
 
   // 플랜 데이터 초기화
   useEffect(() => {
@@ -158,7 +201,7 @@ export default function MainPage() {
     if (!isPlanSaved.current) {
       savePlans();
     }
-  }, [savePlanMutation, refetch]);
+  }, []);
 
   // 플랜 추가 핸들러
   const handleAddPlan = () => setIsAddModalOpen(true);
@@ -311,17 +354,52 @@ export default function MainPage() {
 
   return (
     <PageContainer>
+      <Joyride
+        steps={steps}
+        continuous
+        showSkipButton
+        run={runGuide}
+        stepIndex={stepIndex}
+        callback={handleJoyrideCallback}
+        styles={{
+          options: {
+            arrowColor: "#ffffff",
+            backgroundColor: "#ffffff",
+            overlayColor: "rgba(0, 0, 0, 0.5)",
+            primaryColor: "#39A7F7",
+            textColor: "#333333",
+            zIndex: 10000,
+          },
+        }}
+        locale={{
+          next: "다음", // Next 버튼
+          last: "마침", // Last 버튼
+          skip: "건너뛰기", // Skip 버튼
+          back: "뒤로", // Back 버튼
+          close: "닫기", // Close 버튼
+        }}
+      />
+
       <CustomCalendar
         plans={modifiedPlans}
         isReadOnly={false}
         onPlanChange={handlePlanChange}
         onDeletePlan={handleDeletePlan}
+        className="calendar-area"
       />
       <ButtonWrapper>
-        <Button onClick={handleAddPlan} theme="secondary">
+        <Button
+          onClick={handleAddPlan}
+          theme="secondary"
+          className="add-plan-button"
+        >
           플랜 추가
         </Button>
-        <Button onClick={handleVisitClick} theme="secondary">
+        <Button
+          onClick={handleVisitClick}
+          theme="secondary"
+          className="visit-button"
+        >
           댓글 조회
         </Button>
       </ButtonWrapper>
